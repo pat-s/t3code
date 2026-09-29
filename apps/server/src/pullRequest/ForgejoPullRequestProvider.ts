@@ -413,11 +413,17 @@ export const make = Effect.gen(function* () {
     runAction: (input) => {
       switch (input.action) {
         case "merge":
-          return write({
-            ...input,
-            path: `${pullPath(input)}/merge`,
-            method: "POST",
-            body: { Do: input.mergeMethod ?? "merge" },
+          return Effect.gen(function* () {
+            const repo = yield* getRepo(input);
+            yield* write({
+              ...input,
+              path: `${pullPath(input)}/merge`,
+              method: "POST",
+              body: {
+                Do: input.mergeMethod ?? "merge",
+                delete_branch_after_merge: repo.default_delete_branch_after_merge ?? false,
+              },
+            });
           });
         case "close":
         case "reopen":
